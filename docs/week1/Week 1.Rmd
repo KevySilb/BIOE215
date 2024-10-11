@@ -1,0 +1,298 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+---
+title: "Week 1"
+author: "SBM"
+date: "September 23, 2024"
+output: pdf_document
+
+```{r setup, include=FALSE}
+library(emdbook)
+library(deSolve)
+library(scatterplot3d)
+library(knitr)
+
+#  opts_chunk$set(tidy=TRUE)  #tidy.opts=list(width.cutoff=60)
+
+
+```
+
+# Introduction
+The goal of this course is to provide the background necessary to understand empirical dynamic modeling.  Broadly speaking, EDM is an umbrella term for using flexible, data-driven approaches to modeling the dynamics of complex, sparsely observed systems.  Understanding how EDM works requires some background in nonlinear dynamics and some statistical function approximation. On the way to learning this,  we'll do some forecasting, analysis of stability, evaluate the effects of other drivers, etc., starting out simple and introducing more of the math as we go.
+
+But first, let's start with why we use models in ecology.  Models can be used for a variety of reasons, but the there are two that really stick out.  The first is to make predictions. Predictions can be about the future state of the system, or some other aspect of the current state that must be true if the model is correct.  A subset of this 'prediction' goal is to use the model to evaluate various 'what-if' scenarios.  I generally think that mathematical models should be used to make quantitative predictions, but some folks argue that qualitative (e.g. up v. down, but not how much or how fast) predictions are useful too.  And that brings us to the second main reason that people use models in ecology - to sharpen thinking.  Putting together a model is a great way of synthesizing what is known about a system. More importantly this process is very good for illuminating what isn't known. Sometimes a third category is used - evaluating the implications of our assumptions.  But I'd argue that this falls somewhere between making predictions and sharpening thinking. 
+
+EDM is particularly good at making predictions.  But it also has a role in sharpening thinking.  Unlike traditional ecologial modeling - which depends very heavily on very specific assumptions - EDM allows us to focus on very general properties of systems, things that would be relevant whether we work on elephants or plankton.  Specifically, it can provide us with auxilliary bits of information about systems, like: Are the dynamics linear? Are they stable? What are the relevant time scales? What variables are causally coupled? 
+
+Of course, there are trade-offs.  When we construct traditional ecological models, we often bring together many different kinds of data to constrain the model formulation.  For example, let's say we want to construct a size-based population model.  We might do a series of experiments measuring things like consumption, respiration, mortality, and fecundity as functions of body size and temperature.  Each of these experiments could be conducted in parallel over a relatively short span of time. The results could then be coupled together to construct a size-based model of population dynamics. The whole process could happen within 1-2 generations of the focal critter.  In contrast, EDM works strictly with time series.  To model the same population we would need many (10 or more) generations of observations on size, temperature, and abundance.  In part, this is why EDM is so much more successful in 2024 than it was in the 1990's when it was first developed - there's another 30 years worth of data! 
+
+Before we get started, here are a few more general thoughts on modeling in ecology, trying to frame out where EDM fits in.  Models can be conceptual, graphical, or mathematical - EDM is definitely mathematical.  Other dichotomies are possible:
+
+__Static v dynamic__ 
+Static models represent relationships among things that are constant. Regression models and species distribution models are examples of static models. Dynamic models explicitly represent how things change over time (and space?).  We might arrive at some static relationships by looking at the steady-states, but the model is formulated in terms of change.  EDM is definitely dynamic.  
+
+__Statistical v. theoretical__ 
+Theoretical models usually start with a set of assumptions which lead to a simplified set of equations.  These are then analyzed to see what insights and predictions can be distilled.  Statistical models are fit to data with the goal of estimating some interpretable parameters or making specific predictions.  EDM is definitely statistical.
+
+__Mechanistic v. phenomenological__
+Mechanistic models are deduced from first principles, phenomenoligical models are trying to replicate patterns in data.  Folks who do mechanistic modeling like to make this distinction. I think this is a bogus dichotomy. First, what constitutes a mechanism depends entirely on the level of description.  For instance, the fact that metabolism scales with mass is widely used as mechanism in energy-based ecosystem models.  But why mass scaling exists is the focus of a whole other area of research.  For these folks, mass scaling is a phenomenon that needs to be explained.  Second, it is often the case that we start with a mechanistic model and realize that there are a bunch of parameters we don't know. When we estimate those parameters by fitting the model to the data we'd like to explain, our model stops being mechanistic and starts being statistical.  I like to think of these as 'mechanistically motivated' statistical models.  If we continue this line of thinking, we might acknowledge that there was some function (e.g. how consumption varies with prey availability) we didn't know and try to estimate this by fitting to the available data.  At this point, our model is a mechanistic model with phenomenological components. Detractors like to say that EDM is phenomenological, while proponents argue that it's a tool for revealing mechanism.
+
+__Parametric v. Nonparametric__
+This is a distinction between subsets of models that are fit to data.  If we have fixed functional forms for which we are trying to estimate some parameters, our model is parametric.  Mechanistially motivated models tend to be parametric. On the other hand, if the functions we are estimating are data-driven, it is nonparametric. But, this isn't a super sharp distinction; one way to acheive a nonparametric regression model is to fit a model that combines many terms each of which has a fixed form.  (Note that this usage is distinct from nonparametric statistical models which attempt to make minimal assumptions about how data are distributed.  EDM is definitely nonparametric.)
+
+__Deterministic v. stochastic__ 
+In a deterministic model, if you know the initial state precisely, you know all subsequent states too.  There is no 'process uncertainty.'  On the other hand, in a stochastic setting, the best we can do is characterize the distribution of future states given the present.  Although it seems like this ought to be a sharp
+distinction, things get blurry when we have higher dimensional dynamics or chaos. 
+There are two important ways in which nonrandom things end up being treated as random.  The first is as an inevitable (?) consequence of having incomplete data.  Take for instance the following figure
+
+```{r randata,echo=FALSE,fig.width=5,fig.height=4,fig.cap="\\label{fig:randata} Some mildly 'noisy' data. The blue points represent population sizes observed over 200 generations"}
+x=1;y=1;
+r=2.75; a=0.5000;b=0.07
+T=200;
+
+for (t in 1:(T-1)){
+  x[t+1]=x[t]*exp(r-a*x[t]-b*y[t])
+  y[t+1]=y[t]*exp(r-a*y[t]+b*y[t])
+}
+plot(x[1:T-1],x[2:T],xlab="X(t)",ylab="X(t+1)",pch=16,col="blue")
+
+```
+
+This plot looks a bit noisy, though it's pretty good for ecological data. We'd be well justified in fitting a model to it that allowed for some process error.  That said, these data come from a totally deterministic model, albeit one that is 2 dimensional.  So the apparent 'stochasticity' arises because we are ignoring the other state variable.  Specifically, Figure \ref{fig:randata} was generated from
+
+
+(@Ricker2) $$x_{t+1}=x_te^{r-ax_t-by_t}$$, $$ y_{t+1}=y_te^{r-ay_t+bx_t}$$
+
+with r=2.75, a=0.5 and b=0.07.  A fully 2-d version of this function is plotted in Figure 2 below
+
+
+![The surface illustrates the deterministic function used to generate the previous figure.  The points are generated the same way, but are clearly noiseless when viewed in 2-d](C:/Users/Steve/Documents/steve/classes/switzerland/Ricker2d.png)
+
+In most ecosystems there are _many_ species. Moreover, within each species there are differences among individuals, in e.g. energetic reserves, body size, age, genes, etc.  All of these can affect dynamics.  Even in a well-studied system, we probably keep track of far fewer state variables than required to completely reconstruct what's going on.  So one, probably ubiquitous, source of process 'noise' are the unmeasured state variables.  
+
+This is one setting where EDM is particularly useful.  As we'll see later in the course, Takens' theorem of time-delay embedding (Takens 1981) provides us with a way to handle incompletely observed systems - particularly when they converge to a low dimensional attractor.  
+
+_Imprecise initial conditions_
+And then there are the things that we treat as random because we just cant do any better.  Take, for instance, the classic example of a random event that we were all taught in grade school, tossing a coin.  We start with the coin, flip it into the air so that it rotates reasonably fast, and check which side is facing up when the coin eventually comes to rest.  Our usual assumption is that the coin is 'fair', i.e. that both sides are equally likely to face up.  
+
+But what makes this _random_?  As Keller (1986) points out, the physics of the problem can be made very simple: the coin leaves from a fixed height, $x_0$ (m) with a given vertical velocity, $v_0$ (m/s) and gravity draws it back to earth with constant acceleration $-g$ (m/s^2).  Since the height at time $t$ is given by $x(t) = x_0+v_0t-1/2 gt^2$, the time aloft (i.e. before the height is again $x_0$) is set by $t = 2v_0/g$.  If we neglect air resistance, we can assume that the angular velocity stays constant through time (at rate $\nu$) so that the angle at time t is $\theta(t) = \theta_0 + \nu t$. Let's say that we started it horizontally with heads up and we'll call this $\theta_0=0$.   So, if it lands at time $t = 2v_0/g$, the angle will be $\theta =  2\nu v_0/g$.  So, where did we ever get the idea that this was random??!
+
+At this point we could try to allow for bouncing etc, but that's really hard and totally unncessary. Let's just pretend that we'll call it 'heads' if it lands with $\theta$ between $0$ and $\pi$ and if it lands with $\theta \in [\pi,2\pi]$ we'll call it 'tails'.  Of course, there's no reason for $\theta =  2\nu v_0/g$ to be in $[0,2\pi]$, so we need to be a little more careful.  If we kept on going into the interval $\theta \in [2\pi,3\pi]$ we'd have 'heads' again and for $\theta \in [3\pi,4\pi]$ we'd have 'tails.' We can keep going like this, so really what we want to say is that 'heads' corresponds to $\theta \in [2n\pi, (2n+1)\pi]$ where n is any integer, starting from 0. Similarly, 'tails' means that $\theta \in [(2n+1)\pi, 2(n+1)\pi]$.  So, let's make a plot of the outcome of our coin toss, as a function of our initial vertical and angular velocities.
+
+```{r coin,echo=FALSE, fig.width=5,fig.height=4,fig.cap="\\label{fig:coin} Outcome of coin toss as a function of the initial upward and rotational velocities. The contours separate regions of H and T." }
+v0=seq(0,30,length=100)
+theta0=seq(0,20,length=120)
+z<-matrix(data=NA,100,120)
+for (i in 1:100){for (j in 1:120){z[i,j]=floor(2*v0[i]*theta0[j]/9.8/pi)}}
+
+contour(v0,theta0,z,levels=c(0:100), xlab="Vertical velocity (m/s)", ylab="Angular velocity (radians/sec")
+```
+
+The countours here indicate a switch from heads to tails and vice-versa, starting from heads.  That is between the axes and the coutnour labeled "1" we have heads, between 1 and 2, we have tails, etc.  Down in the bottom left, where both the rotation and vertical velocity are low, there are big gaps between contours.  This agrees with our experience on the playground as kids where if we tossed a coin slow enough we could predict with good accuracy which side it would land on. However, as we increase the vertical and angular velocities (i.e. heading toward the upper right side of the plot), the spacing between successive contours becomes very fine, such that it is hard to know which side will come up. Again, this agrees with our practical experience of coin tossing as children.
+
+So, why do we treat coin tosses as random?  If we know the initial and angular velocities with infinite precision, there is no uncertainty.  But in practice, our precision is always finite. As a consequence we can alway increase the velocity to a point where the contours are finer than our precision will allow us to differentiate, effectively making it impossible to tell which side will come out 'up'.  You can see this effect in Figure \ref{fig:coin2} below, where the red and blue boxes represent the same degree of uncertainty around two different sets of initial conditions.  For the red box at the bottom right, we can be nearly sure that, despite our uncertainty, we will get heads.  But in the blue box in the upper right, the same degree of uncertainty encompases several different bands with nearly equal areas corresponding to heads and tails. So if our uncertainty in initial conditions puts us in the blue box,  we'd have roughly equal chances of heads or tails.  
+
+This puts me in mind of times insisting that my playground pals "flip the coin fast enough so it's random." But, really, the 'randomness' in the coin toss - our archetypal example of a random experiment -  comes entirely from our lack of information about the initial conditions.
+
+```{r coin2 ,echo=FALSE, fig.width=5,fig.height=4,fig.cap="\\label{fig:coin2} Coin toss again.  Here the blue and red boxes represent uncertainty in the initial conditions.  The boxes are the same size, representing the same degree of uncertainty, but there are far more possibilities in the blue one."}
+v0=seq(0,30,length=100)
+theta0=seq(0,20,length=120)
+z<-matrix(data=NA,100,120)
+for (i in 1:100){
+  for (j in 1:120){
+    z[i,j]=floor(2*v0[i]*theta0[j]/9.8/pi)
+    }}
+
+contour(v0,theta0,z,levels=c(0:100), xlab="Vertical velocity (m/s)", ylab="Angular velocity (radians/sec")
+lines(c(5.5,7,7,5.5,5.5),c(5.5,5.5,7,7,5.5),col="red",lwd=3)
+lines(c(5.5,7,7,5.5,5.5)+22,c(5.5,5.5,7,7,5.5)+12,col="blue",lwd=3)
+```
+
+Let's take a step back. At this point we've said that we might as well treat the outcome of a coin toss as random because we can't know the initial conditions precisely enough...and this is for a situation where the physics is absurdly simple!  Imagine what happens when the dynamics are more complex or high dimensional.  In complex dynamics, the contours stop being nice smooth curves and start being fractals, so that the areas where we 'know' the outcome become much more fine grained.  How much experimental 'noise' is just initial condition uncertainty?  And in high dimensional systems, we invariably have coarse observations - either because we are averageing state variables over some intervals of time and space, or because our observations are only a proxy for the thing we really care about (e.g. stable isotope ratios as stand-ins for temperature), or because we are missing species or other state variables entirely.  
+
+_A Quasi-Ecological Example_
+This sort of 'initial value' indeterminacy happens even in the most trivial of ecological models - e.g. the logistic map: $x_{t+1}=rx_t(1-x_t)$ where $x_t$ is population size at time $t$ and $r$ is the population growth rate.  Now, no reasonable biologist believes that this model gives a good apprixomation for real ecological dynamics.  But it is simple enough that it allows us to easily see what is going on.  
+
+You have most likely seen this model before, with an extra term, $K$, for 'carrying capacity'  i.e. $x_{t+1}=rx_t(1-x_t/K)$. While we might care about $K$ for some other reason, it has no effect on the _dynamics_. That is, if we replace $x_t$ with $Ku_t$ so that the new variable $u$ is the fraction of carrying capacity that is currently occupied.  In terms of $u$ the model is $Ku_{t+1}=rKu_{t}(1-Ku_{t}/K)$ which reduces to  $u_{t+1}=ru_t(1-u_t)$.  So, $K$ just shifts the scale without changing anything fundamental.  This is our first example of 'conjugacy' (albeit a totally trivial one) where we can convert one model into another without changing any fundamental properties (such as fixed points, periodicity, stability, etc)  
+
+By iterating the logistic map several times, we can construct a sequence of k-step ahead predictions.  From these it becomes clear pretty quickly why small amounts of uncertainty lead quickly to indeterminacy.  Figures \ref{fig:log1} illustrate what happens when we start with a bunch of points close to each other, but not quite equal. 
+
+```{r log1,echo=TRUE, fig.width=5,fig.height=4,fig.cap="\\label{fig:log1} Iterates of the logistic map, several steps ahead. The first panel indicates the starting values which are centered on x=0.25 +/- 0.01. Even through the map is the same for all starting values, they spread out rapidly"}
+#logistic map
+r<-3.95  #max population growth rate. Must be in [0,4]
+f<-function(x) {r*x*(1-x)} #logistic map with K=1
+T<-11 #number of steps to iterate
+
+x<-array(data=NA,dim=c(T,500)) 
+x[1,]<-rnorm (500)*.01+0.25 #random initial conditions
+for (i in 1:(T-1)) {x[i+1,]<-f(x[i,])} #iterate map
+
+#plot some stuff
+sa=c(1,2,4,11) 
+par(mfrow=c(2,2))
+for (i in 1:4){hist(x[sa[i],], xlim=c(0,1), col="black",xlab=paste("x(",sa[i]-1,")"),main=paste(sa[i]-1," steps ahead"))}
+
+```
+
+So, within 10 steps, a relatively small uncertainty in intial conditions has grown to fill the full range of possible values.  Another way of visualizing initial-value sensitivity is to plot the k-step ahead map.  If the map is given by $x_{t+1}=f(x_{t})$ then the two-step ahead map is given by $x_{t+2}=f(f(x_{t}))$ and so on.  For the logistic map, our quadratic becomes a quartic, then a 6th order polynomial, etc.  
+
+But it is way easier to just get the computer to do it.  Moreover, we can set something up that will work with _any_ 1-d map. To do this, define a fairly dense grid for $x$ and apply $f$ to all of those points for $k$ iterations.  Figure \ref{fig:log2} shows an example of this and how it turns out.
+
+```{r, echo=TRUE, fig.width=5,fig.height=4,fig.cap="\\label{fig:log2} k-step ahead maps for the logistic map. Each curve represents the function turning x(t) into x(t+k)"}
+#logistic map, k-steps ahead
+r=4
+f<-function(x) r*x*(1-x)
+
+x<-array(data=NA,dim=c(11,1000))
+x[1,]<-seq(0,1,length=1000)
+
+for (i in 1:10){x[i+1,]=f(x[i,])}
+
+sa=c(1,2,5,10)
+
+par(mfrow=c(2,2))
+for (i in 1:4){
+  plot(x[1,],x[1,],type="l",col="black",main=paste(sa[i]," steps ahead"), xlab="X(t)",ylab=paste("X(t+",sa[i],")"))
+  lines(x[1,],x[sa[i]+1,],col="blue")}
+
+```
+
+The map gets progressively more wiggly with each step into the future.  Although it is totally deterministic, it is easy to see how a small amount of uncertainty in the initial state would lead to apparent unpredictability by 10 steps out.  This divergence of trajectories due to small changes in initial values is not limited to 1-d discrete time maps.  It also happens in higher dimensions and in continuous time - we'll see more of this later. 
+
+For now, let's introduce a few more mathematical ideas.  A _fixed point_ is a state where the next value is the same as the current one.  I.e. $x_{t+1}=x_{t}$. So the place(s) where the 1:1 line intersects the 1-step ahead map are the fixed points.  In the logistic map, the fixed points are $x^*=0$ and $x^*=1-1/r$.  
+
+In  multi-step maps, there may be additional places where the 1:1 line intersects.  These correspond to cycles.  For example, take a look at the 2-step map. In this plot, we have 4 crossing points.  Two of these correspond to a cycle of period 2, a '2-cycle' for short.  The other two crossing points are the ones we had in the 1-step map.  (Why are they still there? They are _fixed_!). When identifying cycles, it's only the _new_ crossing points that correspond to higher-period cycles. 
+
+Now that we've got the general architecture set up, let's try doing some stuff independently. 
+
+_Hands on:_ 
+1. a) Construct the multi-step maps for r=2.5, 3, 3.25 
+    b) Plot the time series corresponding to each value.
+    c) Think about your result - why does the multistep map look this way?  How important is initial condition uncertainty for these smaller values of r?
+    d) Think- How many times will the 4-step ahead map cross the 1:1 line if there is going to be a 4-cycle?      
+    e) Look at the 10-step map with r=3.6. What is the cycle period? What happens at r=3.61?
+ 
+         
+## Prediction
+One of the more exciting and practical aspects of EDM is that we can use it to make predictions for complex dynamics.  We can do this even when dont have any equations for the dynamics, provided that we have enough observations to infer them from the observed time series.  The two basic ingredients of EDM are 1. Flexible, data-driven approximation of the dynamical model and 2. Using time-lagged values of the observed variables to compensate for the variables we are missing.  This latter piece we'll take up in more detail when we get to time-delay embedding.  For now, we'll focus on the data-driven modeling part. 
+
+Before we dive in, I should acknowledge that there are nicely written R packages to do this sort of thing, rEDM, GP-EDM, and others.  But using a package doesnt do a lot to illuminate what's going on. Packages are a good way to save time on implementation later - but for now, we'll do it ourselves so we can see exactly how it works.  The idea is that we are going to estimate a function that turns the past states of the system into the next states from the data we simulated.  
+
+That is, we are going to use some time series data to estimate a function $\hat{F}$ such that $x_{t+1}\approx\hat{F(x_t)}$.  We can then use this function for all sorts of things, e.g. predicting the next state, estimating the steady state, determining stability, etc.    
+
+There are many options for flexibly inferring functions, ranging from basis function expansions, to local linear models, to neural networks.  We will talk about many of these in week 3.  Probably the easiest of these to implement in r are the nearest neighbor and local linear regression approaches. 
+
+As a motivational example, let's continue working with the logistic map, because it is easy to see when / how our EDM approach is working.  When we plot the next state against the current state, we can see fairly clearly the parabolic shape of the logistic map (real data are rarely this nice, but we're just trying to lay out the ideas).  
+
+As a first step towared EDM, we'll use a nearest neighbor (NN) approach to approximate the 1-step map.  The idea with the NN is that when the function we're estimating is smooth, the function values at nearby points should be similar.  So an easy way to approximate the function at some point, call it $x^*$, is to find points in the data that are nearby and average their value one step into the future. Here's an example
+
+```{r, echo=TRUE,fig.width=5,fig.height=4,fig.cap="\\label{fig:LogisticNN} Nearest-neighbor averaging to approximate the logistic map.  The blue points are the data generated by iterating the Logistic map (black line).  The nearest-neighbor averaging approach is shown in red."}
+
+#logistic map with local linear approximation
+r=3.95
+F<-function(x) r*x*(1-x)
+
+#simulate data
+T=50
+x[1]=.1
+for (i in 1:T){x[i+1]=F(x[i])}
+
+
+#nearest neighbor estimation
+#number of neighbors to use
+nn=2 
+
+#set up a grid for making predictions
+ng=100 
+xg<-seq(0,1,length=ng)
+F1<-0*xg
+
+Y=x[2:(T+1)]
+for (i in 1:ng){
+
+  #nearest neighbor approximation
+  dist=abs(xg[i]-x[1:T]) #distance to current grid point
+  dsort<-sort(dist,index.return=TRUE) #sorts distances
+  nbr<-dsort$ix[1:nn] #grabs indices of nearest neighbors
+  F1[i]<-mean(Y[nbr]) #averages future values of neighbors
+}
+
+#plot stuff
+plot(x[1:T],x[2:(T+1)],type='p',pch=10,col="blue")
+lines(xg,F(xg),col="black")
+lines(xg,F1,col="red")
+
+```
+
+The nearest-neighbor averaging approach is shown in red.  It is pretty good where there are plenty of data, but not so great where there are gaps. And the flat spots are decidely at odds with the fact that the target is smooth. But it is dirt-simple and super-easy to code. 
+
+When we want to go multiple steps into the future, there are two choices open to us.  The obvious thing to do is to iterate the estimate of $f$ that we just obtained.  This is not a bad idea, but approximation errors can blow up pretty fast.  Another way to go is to try to estimate the k-step map directly.  This can be better when k is relatively small.  Obviously, based on the earlier figures, we arent going to pull this off for k=10!
+
+
+Here's an example of how to do the 2-step ahead map
+```{r, echo=TRUE, fig.width=5,fig.height=4,fig.cap="\\label{fig:LogisticNN2} Two ways to get ahead: iterated 1-step map v. direct estimate of the 2-step map.  The purple line is the direct NN estimate of the 2-step map. The red line is the second iteration of the 1-step map. The black line is the right answer."}
+#logistic map with local linear approximation
+r=3.95
+F<-function(x) r*x*(1-x)
+
+#simulate data
+T=50
+x[1]=.1
+for (i in 1:(T-1)){x[i+1]=F(x[i])}
+
+#over a grid of values, use a nn model to approximate F1
+nn=2 #number of neighbors to use
+ng=100 #number of grid points to evaluate
+xg<-seq(0,1,length=ng) #grid for function estimate
+
+Y2=x[3:(T+1)] #two steps ahead data
+Y1=x[2:T] #one step ahead data
+
+#initialize function estimates
+F1=0*xg
+F2dir=0*xg
+F2iter=0*xg
+
+for (i in 1:ng){
+
+  #directly estimate 1- and 2- step maps
+  dist=abs(xg[i]-x[1:T]) #distance to current grid point
+  dsort<-sort(dist,index.return=TRUE) #sorts distances
+  nbr<-dsort$ix[1:nn] #grabs indices of nearest neighbors
+  F1[i]<-mean(Y1[nbr]) #averages 1-step ahead values of neighbors
+  F2dir[i]<-mean(Y2[nbr]) #averages 2-step ahead values of neighbors
+  
+  #iterated 2-step map: (use nn on 1-step predictions)
+  dist2=abs(F1[i]-x[1:T]) #distance to predicted next state
+  dsort<-sort(dist2,index.return=TRUE) #sorts distances
+  nbr<-dsort$ix[1:nn] #grabs indices of nearest neighbors
+  F2iter[i]<-mean(Y1[nbr]) #averages 1-step ahead values of neighbors
+}
+
+#plot stuff
+plot(x[1:T-1],x[3:(T+1)],type='p',pch=10,col="blue", main="Two step ahead map", xlab="x(t)",ylab="x(t+2)")
+lines(xg,F2dir,col="purple")
+lines(xg,F(F(xg)),col="black")
+lines(xg,F2iter,col="red")
+
+```
+
+The purple line is the 2-step map estimated directly from $x(t+2)$ and the red line is the two-step map obtained by iterating the 1-step map a second time.  The red line is somewhat wigglier, but both are pretty close. 
+
+_Hands on:_ 
+2. a) What happens if you increase or decrease the number of neighbors? 
+    b) How well can we estimate that map when r=3.5?
+    c) Think - How would we modify this setup to make 'forecasts,' e.g. predicting the abundance for the next steps in the time series. 
+
+
+Note that we can only use a direct estimate for the k-step ahead map when we have enough data k-steps out. This puts a hard upper bound on how far into the future we can take this approach. Conversely, we can iterate the 1-step map forever, though it will end up pretty bad pretty fast. On the other hand, if we naively tried to estimate the 10-step map directly, we'd most likely get a flat line; any algorithm that allows for process uncertainty will treat the 10-step ahead data as noise.  But an iterated approach would not become flat.  It seems reasonable to imagine that a hybrid appraoch would be an improvement, though I have not seen this in the ecological literature... 
+
+The most troubling thing about NN estimates - which is maybe a bit more apparent in this 2-step ahead example, is the staircase-like (aka 'piece-wise constant') function that results.  There are lots of ways to improve on this function approximation scheme used and many, many papers have done so.  But the nearest neighbor algorithm is probably the easiest thing to implement. Importantly all of the function approximation approaches we will consider later in the quarter make use of the same fundamental idea: we are trying to estimate a smooth map, so nearby points correspond to more similar values for the function than points farther apart. 
+
+
+ 
+
+

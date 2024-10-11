@@ -1,0 +1,532 @@
+---
+title: "Week 2: Linear algebra in a day"
+author: "S.Munch"
+date: "2024-09-27"
+header-includes:
+   - \usepackage{amsmath}
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(emdbook)
+library(knitr)
+```
+Linear algebra is a convenient shorthand for dealing with collections of numbers. It comes up in many different areas of mathematics and it's a screaming shame that it isn't required.  These notes are going to attempt to give you a tiny bit of background - just enough to get going.  But really, you could do an entire quarter or more on this stuff.  Although this is really a math session, I am going to try to make it as intuitive as possible, with lots of pictures and analogies.  Nevertheless, it is ALOT of math and about half-way through this you're probably going to be wondering why we're doing all this and how it relates to EDM or ecology. So here's some additional motivation: One very common application of linear algebra in ecology is in age- and stage-structured models where the elements represent numbers of individuals (or density) in different age (stage) classes.  Another common application in to represent abundance (or some other variable) in several locations, or at several different times. We can describe changes in probability for a discrete random variable using Markov chais - which is also linear algebra.   For the purpose of this course, linear algebra will be a core element in measuring local stability in multi-dimensional systems and it will be an important component of our statistical modeling. So, hang in there!
+
+Vectors and matrices are arrays of numbers.  The elements of a vector or matrix may have different units (e.g. temperature and salinity, or abundance of predators and abundance of prey) or they may be the same units in different places.  For simplicity of visualization, we will work primarily in 2-d but the results carry over to an arbitrary number of dimensions. 
+
+
+## Definitions
+First some definitions.
+
+
+_Scalar_
+A scalar is just one number.  Symbolically, we'll use a lowercase letter for a scalar, e.g. $a$
+
+_Vectors_
+A vector is a 1-d array of scalars. I will use a lowercase letter with an arrow over it, e.g. $\vec{x}$ to indicate a vector.  By default, we will assume that they are stacked in a column, i.e.
+
+$$\vec{x}=
+\begin{bmatrix} 
+1 \\ 
+3\\ 
+\end{bmatrix}
+$$
+As you probably recall from high school, a vector can be visualized as an arrow (this is why we are doing this in 2-d!)
+
+```{r,echo=FALSE,fig.width=4,fig.height=4,fig.cap="\\label{fig:vec1} Visualizing a vector$. Note that the axis labels are n rather than x to avoid confusion when we add vectors.  I couldn't figure out how to get the arrow over the x in this plot or caption..."}
+x1=1; x2=3
+plot(x1, x2, type="n", xlim=c(0, 4), ylim=c(0, 4),xlab="n_1",ylab="n_2")
+arrows(0, 0, x1, x2,col='blue')
+text(.5,2,'x')
+```
+
+I've labeled the axes $n_1$ and $n_2$ because I didn't want to specify the units just yet and later we're going to use $x$ and $y$ to represent distinct vectors.  
+
+
+
+At this point, it is handy to define 'transpose'  which turns columns into rows (and vice versa).  E.g. $\vec{x}^T$ is $\vec{x}$ transposed, which is
+
+$$\vec{x}^T=
+\begin{bmatrix}
+1 & 3 \\
+\end{bmatrix}
+$$
+Because column vectors take up alot of space, when I am trying to define a vector inside a paragraph, I will frequently write it's elements in a row and then transpose the result. For example, $\vec{x}=[1,3]^T$, is how we'd write $\vec{x}$ without sucking up so much space.   
+
+
+_Matrices_
+A matrix is a 2-d array of scalars. Or a 1-d array of vectors.  Whatever. Usually, we write matrices with uppercase letters. Here's an example:
+
+$$A=
+\begin{bmatrix}
+3 & 1 \\
+2 & 4 \\
+\end{bmatrix}
+$$
+The elements of a matrix are referred to by their row and column indices.  So $A_{1,2}$ is the element in the first row, second column, which in this case is 1.  And for sake of clarity, the transpose of a matrix would be
+
+$$A^T=
+\begin{bmatrix}
+3 & 2 \\
+1 & 4 \\
+\end{bmatrix}
+$$
+which turned the columns into rows just like it did for vectors.  Note that transposition swaps row and column indices.  That is, $(A^T)_{i,j}=A_{j,i}$
+
+## Basic operations: addition/subtraction
+The utility of using vectors and matrices is that many complicated expressions and operations are much simpler in vector-matrix notation as we will see shortly.
+
+Now let us define some basic operations.  Addition and subtraction are defined 'elementwise.' That is, we add/subtract the corresponding elements in each vector and we end up with a new vector/matrix that is that is the same number of elements we started with.  (This also implies that we can only add or subtract vectors of the same size).
+
+For example, if we have the two vectors 
+
+$$
+\begin{aligned}
+\vec{x}=
+\begin{bmatrix}
+1 \\
+3\\
+\end{bmatrix} &, &
+\vec{y}=
+\begin{bmatrix}
+2 \\
+2\\
+\end{bmatrix}\\
+\end{aligned}
+$$
+Then
+
+$$\begin{aligned}
+\vec{w}=\vec{x}-\vec{y}=
+\begin{bmatrix}
+1 \\
+3\\
+\end{bmatrix}-\begin{bmatrix}
+2 \\
+2\\
+\end{bmatrix}=\begin{bmatrix}
+-1 \\
+1\\
+\end{bmatrix}\end{aligned}
+$$
+Similarly,
+
+$$\begin{aligned}
+\vec{z}=\vec{x}+\vec{y}=\begin{bmatrix}
+1 \\
+3\\
+\end{bmatrix}+\begin{bmatrix}
+2 \\
+2\\
+\end{bmatrix}=
+\begin{bmatrix}
+3 \\
+5\\
+\end{bmatrix}\end{aligned}
+$$
+
+We can visualize addition and subtraction in the following ways.  Subtraction can be visualized as the vector that connects the ends of the arrows. That is, if $\vec{w}=\vec{x}-\vec{y}$ then the arrow from $\vec{y}$ to $\vec{x}$ indicates $\vec{w}$.
+
+```{r,echo=FALSE,fig.width=4,fig.height=4,fig.cap="\\label{fig:vecminus} Visualizing vector subtraction.  The solid blue and black lines indicate vectors x and y$.  The purple dashed line indicates w$, while the purple solid line is w shifted so that it starts at the origin."}
+x1=1;x2=3;
+y1=2;y2=2;
+w1=-1;w2=1;
+
+plot(x1, x2, type="n", xlim=c(-1, 5), ylim=c(-1, 5),xlab="n_1",ylab="n_2")
+arrows(0, 0, x1, x2,col='blue')
+text(.5,2,'x')
+arrows(0, 0, y1, y2,col='black')
+text(1,.7,'y')
+arrows(y1, y2, x1, x2,col='purple',lty=2)
+text(.5,2,'x')
+arrows(0, 0, w1, w2,col='purple')
+
+
+```
+
+On the other hand, adding can be visualized as sticking the vectors end to end.
+
+
+```{r,echo=FALSE,fig.width=4,fig.height=4,fig.cap="\\label{fig:vecplus} Visualizing vector addition.  The solid blue and black lines indicate vectors x and y.  The dashed versions indicate these vectors shifted so they start where the other one ends.  The red line indicates z"}
+x1=1;x2=3;
+y1=2;y2=2;
+z1=3;z2=5;
+
+plot(x1, x2, type="n", xlim=c(0, 5), ylim=c(0, 5),xlab="n_1",ylab="n_2")
+arrows(0, 0, x1, x2,col='blue')
+text(.5,2,'x')
+arrows(0, 0, y1, y2,col='black')
+text(1,.7,'y')
+arrows(x1, x2, z1, z2,col='black',lty=2)
+text(.5,2,'x')
+arrows(y1, y2, z1, z2,col='blue',lty=2)
+
+arrows(0, 0, z1, z2,col='red')
+text(3.1,4.9,'z')
+
+```
+
+With this picture in mind, can you say anything general about the length of vector $\vec{z}$ in terms of the the other vectors?  Although we have not yet been careful to define the length of a vector, we can intuit from this figure that under any reasonable definition, the length of $\vec{z}$ must be less than or equal to the length of $\vec{x}$ plus the length of $\vec{y}$. Moreover, they only ought to be equal if $\vec{x}$ and $\vec{y}$ are pointing in the same direction.
+
+More formally, length is often referred to as the _norm_ of a vector.  There are many ways to define a norm. Typical notation is $||x||_p$ which indicates $||x||_p=(|x_1|^p+|x_2|^p+...+|x_n|^p)^{1/p}$ and is called the _p-norm_. Note that the norm is never negative. The most common of these is the Euclidean norm with $p=2$, which is just the classical definition of distance you've seen before.  The 1-norm is the sum of absolute values, If the norm is missing it's subscript, it's usually safe to assume that $p=2$.  A _unit vector_ is a vector with norm equal to 1.  Picking up from the previous paragraph, it isn't hard to prove that $||x+y||\leq ||x||+||y||$.  Hint: square both sides.
+
+For matrices, addition and subtraction are also element-wise and you can visualize the result by thinking of the matrices as collections of column vectors.
+
+## Basic operations: Multiplication
+Unlike scalar math, when we working with vectors and matrices, there's more than one way to define multiplication.  I'm pretty sure I've seen at least 6.  But there are a few that come up most often so we'll stick with these. for now. We'll start with vectors then generalize to matrices.
+
+_Scalar_
+The most intuitive multiplication is multiplication by a scalar.  In this case, each element of the array is multiplied by the scalar. This just stretches a vector, without changing it's direction. As an example, 
+
+$$\begin{aligned}
+\vec{u}=2\vec{x}= 
+2\begin{bmatrix}
+1 \\
+3\\
+\end{bmatrix}=\begin{bmatrix}
+2 \\
+6\\
+\end{bmatrix}\end{aligned}
+$$
+This works the same way for matrices.  
+
+_Schur or Hadamard product_
+This product is defined elementwise and is usually denoted with an open circle $\vec{h}=\vec{x}\circ \vec{y}$. So, just like with addition and subtraction, the answer is a vector of the same size.  So
+
+$$\begin{aligned}
+\vec{h}=\vec{x}\circ\vec{y}=\begin{bmatrix}
+1 \\
+3\\
+\end{bmatrix}\circ\begin{bmatrix}
+2 \\
+2\\
+\end{bmatrix}=
+\begin{bmatrix}
+2 \\
+6\\
+\end{bmatrix}\end{aligned}
+$$
+This works the same way for matrices.  Clearly, they'd need to have the same number of rows __and__ columns
+
+_Outer product_
+This product takes two vectors of any size and makes a matrix of all pairwise products.  It is usually written as $B=\vec{x}\otimes\vec{y}$ or $B=\vec{x}\vec{y}^T$.  Specifically, the $i,j^{th}$ element of $B$ is $B_{i,j}=x_i y_j$.  It is worth noting that unlike ordinary scalar multiplication, the order matters. That is,  $\vec{y}\vec{x}^T = (\vec{x}\vec{y}^T)^T$
+
+Here's an example:
+$$\begin{aligned}
+\vec{o}=\vec{x}\vec{z}^T=\begin{bmatrix}
+1 \\
+3\\
+\end{bmatrix}\begin{bmatrix}
+3 & 5 \\
+\end{bmatrix}=
+\begin{bmatrix}
+3 & 5\\
+9 & 15\\
+\end{bmatrix}\end{aligned}
+$$
+
+_Dot product or Inner product_
+This product is defined as the sum of elementwise products. So, again, we can only apply it to vectors of the same size, but this time the answer is a scalar!  The usual notation is $d=\vec{x}\bullet\vec{y}$ (hence the name 'dot product') though sometimes you see this as $d=\vec{x}^T\vec{y}$.  In either case this indicates $d=\sum_i x_iy_i$.
+
+The inner product can be visualized as the length of the orthogonal projection of one vector on the other.  This follows directly from trigonometry if you recall that the length of the adjacent side of a right triangle is the cosine of the included angle times the length of the hypoteneuse.   
+
+
+```{r,echo=FALSE,fig.width=4,fig.height=4,fig.cap="\\label{fig:inner} Visualizing the inner product.  The solid blue and red lines indicate vectors x and y.  The dashed the purple line indicates the length of the orthogonal projection of x onto y.  The dashed line is just there to help you see the 'orthogonal' part."}
+x1=1;x2=3;
+z1=5;z2=3;
+lx=sqrt(x1^2+x2^2)
+lz=sqrt(z1^2+z2^2)
+ip=(x1*z1+x2*z2)
+c=ip/(lz)^2
+
+plot(x1, x2, type="n", xlim=c(0, 5), ylim=c(0, 5),xlab="n_1",ylab="n_2")
+arrows(0, 0, x1, x2,col='blue')
+text(.5,2,'x')
+arrows(0, 0, z1, z2,col='red')
+
+arrows(0, 0, c*z1, c*z2,col='purple')
+segments(x1, x2, c*z1, c*z2,col='black',lty=2)
+
+text(3.1,4.9,'z')
+
+```
+
+More formally, we can write 
+
+$$\vec{x}^T\vec{y} = ||x|| ||y|| cos(\theta)$$
+
+where $\theta$ is the angle between the vectors.  Recalling that the length of the adjacent side would be $||x||cos(\theta)$, we can see that this length is also given by $\vec{x}^T\vec{y} / ||y||$.  This identity for the inner product also highlights the fact that the inner product of a vector with itself is just the squared length of the vector, $\vec{x}^T\vec{x} =||x||^2$.  
+
+We can use this relation to think through some bounds on the inner product.  For instance, if two vectors are orthogonal to each other, then $cos(\theta)=0$. This means that $\vec{x}^T\vec{y}=0$ is an equivalent condition for two vectors to be orthogonal.  Going the other way, the maximum value that $cos(\theta)$ can take is 1, so $\vec{x}^T\vec{y} \leq ||x|| ||y||$ which is known as the _Cauchy-Shwartz inequality_.  
+
+
+Although there are also several ways to multiply matrices, we will (probably) only need one. In this convention, the $i,j^{th}$ element of the product matrix is given by the inner product of the $i^{th}$ row of the first matrix and $j^{th}$ column of the second. To make this a bit more specific, if $C=AB$, then $C_{i,j}=\sum_k A_{i,k}B_{k,j}$. Right away, we can see that this definition of matrix multiplication is not commutative.  That is, $AB\neq BA$ in general. Also, we don't need to have $A$ and $B$ be exactly the same size. But what we do need is the number of columns in $A$ to equal the number of rows in $B$.  Thinking this through, if $A$ is (n x m) (i.e. it has n rows and m columns) and $B$ is (m x p), then $AB$ is (n x p).  Note that this definition gives us the inner product when $A$ is row vector and $B$ is a column. It gives us the outer product when $A$ is a column and $B$ is a row.
+
+The transpose of a matrix product is the product of the transposed matrices, in reverse order! I.e. $(AB)^T=B^TA^T$.  This probably seems a little weird. Make up two matrices and convince yourself that this is true.
+
+This definition works for a matrix times a vector, too (think of a vector as a matrix with just one column) and thinking it through we see that a matrix times a vector is another vector.  This is by far the most relevant definition for our work with dynamical systems.  When we introduced scalar multiplication, we said it just stretched or shrank a vector, without rotating it.  When we multiply by a matrix, we get both stretching and rotation.  
+
+Here's an example. Say we have 
+$$\begin{aligned}
+\vec{x}=\begin{bmatrix}
+1 \\
+3\\
+\end{bmatrix} &and & A = \begin{bmatrix}
+1/2 & 1/2 \\
+-1/2 & 1 \\
+\end{bmatrix}
+\end{aligned}
+$$
+Then, following the definitions laid out above, the product is 
+
+$$\begin{aligned}
+\vec{y}=A\vec{x}=\begin{bmatrix}
+1/2 & 1/2 \\
+-1/2 & 1 \\
+\end{bmatrix}\begin{bmatrix}
+1 \\
+3\\
+\end{bmatrix}
+= \begin{bmatrix}
+2 \\
+5/2\\
+\end{bmatrix}
+\end{aligned}
+$$
+Plotting this out we have
+
+```{r,echo=TRUE,fig.width=4,fig.height=4,fig.cap="\\label{fig:matrixvector} Visualizing the product of a matrix times a vector.  The solid blue line indicates vector x. The red line indicates y=Ax."}
+x=matrix(data=c(3,3),nrow=2,ncol=1)
+A=matrix(data=c(1/2,-1/2,1/2,1),nrow=2,ncol=2)
+y=A%*%x
+
+plot(x[1], x[2], type="n", xlim=c(0, 5), ylim=c(0, 5),xlab="n_1",ylab="n_2")
+arrows(0, 0, x[1], x[2],col='blue')
+text(x[1]+.1, x[2],'x')
+arrows(0, 0, y[1], y[2],col='red')
+
+text(y[1]+.1, y[2],'y=Ax')
+
+```
+
+Note that we can also think of multiplying a matrix times a vector as a weighted sum of the column vectors comprising the matrix.  That is, if $A=[\vec{a_1}, \vec{a_2}]$ and $\vec{x}=[2,4]^T$, then $\vec{y} =A\vec{x} = 2\vec{a_1}+4\vec{a_2}$. The upshot of this is that when we multiply a matrix by a vector, the result remains in the 'column space' of the matrix.  So, if the columns of $A$ lie in a lower dimensional space, $\vec{y}$ will as well.   
+  
+Hands on:
+1. Repeat the calculation above with $\vec{x}=[3, 3]^T$.  Do you get the same amount of rotation and stretching?  
+
+2. Starting from any $\vec{x}$ you like, multiply by $A$ and plot the answer. Set $\vec{x}$ equal to your answer and repeat. Keep plotting the answer as you do.  What's happening? 
+
+3. Pick two numbers, $a,b$ and create the matrix 
+$$R=\begin{bmatrix}
+a & b \\
+-b & a \\
+\end{bmatrix}\frac{1}{\sqrt{a^2+b^2}}$$
+Use this matrix in the preceding example.  What's different?
+
+## Basis
+Although we usually like to think in terms of the original units (whatever they happen to be), it is sometimes more convenient to work in another coordinate system. To set this up, it is helpful to think about _basis vectors_. We can write any other vector as a sum of these.  In 2-d we need 2 numbers to describe a point in the plane, so we need two basis vectors. Basis vectors have length 1 by definition.  But otherwise the choice of basis is sort of arbitrary. For instance, the usual basis set in 2-d is  
+
+$$\begin{aligned}
+\vec{e_1}=\begin{bmatrix}
+1 \\
+0\\
+\end{bmatrix}&& and && \vec{e_1}=\begin{bmatrix}
+0 \\
+1\\
+\end{bmatrix}
+\end{aligned}
+$$
+
+Clearly, we can write any vector we like as a linear combination of these two, e.g. if $\vec{x} = [2, 3]^T$, then $\vec{x} = 2\vec{e_1}+3\vec{e_2}$
+
+Sometimes we want to change the basis - e.g. because some operation is easier or because it's easier to interpret.  For example, one common (and hopefully familiar) change of basis is when we do a principle component analysis.
+
+To change basis, we take the vectors in our original units and project them onto the new basis vectors.  If the new basis is orthogonal, we can get there using the projections onto each basis vector separately.  E.g. Let's say we want to switch our basis from $\vec{e_1}, \vec{e_2}$ to $\vec{v_1}=[1, 1]^T/\sqrt{2}$ and $\vec{v_2}=[1, -1]^T/\sqrt{2}$. To get the coordinates for $\vec{x}$ in this new basis, we take the inner product: $c_1=\vec{x}^T\vec{v_1}=5/\sqrt{2}$ and $c_2=\vec{x}^T\vec{v_1}=-1/\sqrt{2}$. If we did this right, then $\vec{x}=c_1 \vec{v_1}+c_2\vec{v_2}$.  Did it work?      
+
+
+## Special matrices: Identity, Inverse, Stretch, Rotation, Sheer  
+There are a few special matrices worth mentioning.  The first is the _identity_ matrix, which is a square matrix with 1's on the diagonal and zeros everywhere else.  It is typically denoted $I$.  In some cases, it has a subscript, e.g. $I_n$ which tells us that it is an (n x n) matrix.  Identity plays the role of 1 for vectors and matrices. That is, any vector or matrix times identity is itself.  E.g. $I\vec{x}=\vec{x}$ and $AI=IA=A$.  
+
+Alert readers will have noticed that we haven't yet done division. So here we go.  Division is just undoing multiplication, and we know that $a \times \frac{1}{a} = 1$.  Analogously, we define the inverse of a matrix as $A A^{-1}=A^{-1}A=I$.  Sometimes this is written as $A^{-1}=inv(A)$.  
+
+Maybe the most head-scratching bit about inverses is that unlike in scalar math, the inverse might not exist! Above, we pointed out that the vector we get by multiplying a vector by a matrix can be thought of as a sum of the column vectors of the matrix. We noted that this means that the product is confined to the space spanned by the columns.  So, if we have an (n x n) matrix, $A$ whose columns only span a space of m < n dimensions, (i.e. we can write one of the columns as a combination of the others) then multiplying by $A$ projects vectors down into this space.  Many different vectors will project to the same spot - think about how many vectors you could draw that would have the same projection onto another one as in \ref{fig:inner}.  When this happens, there is now 'undo' and the inverse matrix doesn't exist.  In this case the matrix is called _singular_ and one or more eigenvalues are zero.     
+
+
+You will probably never need to invert a matrix by hand unless you decide to become a theoretician.  For now, we'll do it numerically. In R you can get to the inverse with 'solve()' or with the matlib library you can use inv() or Inverse().  
+
+
+
+As you probably noticed in the hands-on exercise, multiplying by a matrix can stretch or shrink a vector as well as rotate it.  More formally, we can divide the actions of a matrix as rotation (flip), stretch, and shear.  Here are some examples:
+
+In a pure rotation, the length of the vector doesn't change, it just swings through an fixed angle with each multiplication.  In 2-d, the matrix
+
+$$R(\omega)=\begin{bmatrix}
+cos(\omega) & sin(\omega) \\
+-sin(\omega) & cos(\omega)\\ 
+\end{bmatrix}$$
+
+rotates a vector clockwise by angle $\omega$ (in radians).  This means that applying $R(\omega)$ twice rotates the vector by $2\omega$, which means that $R(\omega)^2=R(2\omega)$. Can you guess what the inverse of $R(\omega)$ needs to look like?  To undo the rotation, we'd just need to rotate by $-\omega$.  Plugging this in - and remembering that $cos(-\omega)=cos(\omega)$ while $sin(-\omega)=-sin(\omega)$ - we can see that $R(-\omega)=R(\omega)^T$ would be the rotation back.  This is a general property of rotation matrices: $R(\omega)R(\omega)^T=I$, which implies $inv(R)=R^T$. 
+
+Here's a visualization:
+```{r,echo=TRUE,fig.width=4,fig.height=4,fig.cap="\\label{fig:rotate} Visualizing rotation.  Starting from the black box, we apply the rotation to obtain the blue box, ."}
+w=2*pi*(1/8)
+R=matrix(data=c(cos(w),-sin(w),sin(w),cos(w)),nrow=2,ncol=2) #rotation matrix
+box=matrix(data=c(0,0,0,1,1,1,1,0,0,0),nrow=2,ncol=5) #some vectors to rotate
+#Note: the last vector in box is repeated so that the box actually closes.
+
+boxr=R%*%box
+
+plot(box[1,],box[2,],type="n", xlim=c(-1, 5), ylim=c(-1, 5),xlab="n_1",ylab="n_2")
+lines(box[1,],box[2,],col='black')
+lines(boxr[1,],boxr[2,],col='blue')
+
+```
+Did the rotation do to the box what you thought it would?  The thing to realize is that it is a rotation around the origin.  If you wanted to rotate around some other point, you'd have to shift the origin.  
+
+
+In a pure stretch, the vector just get's longer or shorter without rotating.  A matrix with $c$ on the diagonal and zeros elsewhere stretches a vector by factor $c$. Note that this is the same as multiplying by a scalar. More generally, we can stretch each axis independently, say 
+
+$$ S=\begin{bmatrix}
+\lambda_1 & 0\\
+0 & \lambda_2\\
+\end{bmatrix}
+$$
+
+A _shear_ matrix moves one axis and leaves the other alone.  For example, the matrices
+
+$$\begin{aligned}
+H=\begin{bmatrix}
+1 & \lambda \\
+0 & 1\\ 
+\end{bmatrix} & &and & & V=\begin{bmatrix}
+1 & 0 \\
+\mu & 1\\ 
+\end{bmatrix}\end{aligned}$$
+
+shear points in the horizontal and vertical directions respectively, while leaving the other direction unchanged.  
+
+Here's a visualization:
+
+```{r,echo=TRUE,fig.width=4,fig.height=4,fig.cap="\\label{fig:shear} Visualizing shear.  Starting from the black box (think of this as a collection of vectors), we apply the vertical shear matrix to obtain the blue box, the horizontal shear matrix to obtain the red box.  The purple box results from applying horizontal shear followed by vertical."}
+
+V=matrix(data=c(1,1/2,0,1),nrow=2,ncol=2) #vertical shear matrix
+H=matrix(data=c(1,0,3/2,1),nrow=2,ncol=2) #horizontal shear matrix
+box=matrix(data=c(0,0,0,1,1,1,1,0,0,0),nrow=2,ncol=5) #some vectors to shear
+#Note: the last vector in box is repeated so that the box actually closes.
+
+boxv=V%*%box
+boxh=H%*%box
+boxvh=V%*%H%*%box
+
+plot(box[1,],box[2,],type="n", xlim=c(-1, 5), ylim=c(-1, 5),xlab="n_1",ylab="n_2")
+lines(box[1,],box[2,],col='black')
+lines(boxv[1,],boxv[2,],col='blue')
+lines(boxh[1,],boxh[2,],col='red')
+lines(boxvh[1,],boxvh[2,],col='purple')
+
+```
+
+
+Hands on:
+1. Using a pencil, multiply any 2-vector by $I_2$ to convince yourself that nothing changes.
+2. Construct a (2x2) matrix such that applying it 3 times to $\vec{x}$ gets you back to $\vec{x}$ but stretched by a factor of 8.
+3. Mess around with the horizontal and vertical sheer example by changing the off-diagonal term. What happens when it's less than 1? What happens when it's negative?
+
+## Eigenvalues, eigenvectors
+Even in 2-d it is a little bit tricky to guess what the action of any particular matrix will be just by looking at the numbers.  As a result, there are a variety of 'matrix decomposition' algorithms which break a given matrix down into two or more component matrices that are easier to work with or interpret.  For our purposes, the one we'll need the most is the _eigenvalue decomposition_ which greatly simplifies repeated matrix multiplication.
+
+I should say that other decompositions, such as _singular value decomposition_, _polar decomposition_, _QR decomposition_, and _Cholesky factorization_ all have important uses in nonlinear dynamics and EDM.  But I think we'll try to introduce these as they come up.  For now, we'll focus on _eigenvalue decomposition_.
+
+The eigenvalue decomposition represents a matrix in terms of new basis such that multiplication by the matrix is simplified to stretching / shrinking and rotation.  Specifically, in our eigen-basis, our matrix will be reduced to either
+
+$$\begin{aligned}
+S=\begin{bmatrix}
+\lambda_1 & 0\\
+0 & \lambda_2 \\
+\end{bmatrix}&& or && R=\begin{bmatrix}
+\alpha & \beta \\
+-\beta & \alpha\\
+\end{bmatrix}
+\end{aligned}
+$$
+
+For sake of completeness, I should say that there's one other possibility, 
+$$
+Z=\begin{bmatrix}
+\lambda & 1\\
+0 & \lambda \\
+\end{bmatrix}
+$$
+The reason I am skipping this one is that it is structurally unstable: adding a small perturbation to any term in this matrix puts us back into one of the other two cases. So, while it comes up in theoretical examples, it's unlikely that this would ever come up with real data...
+
+Coming back to eigenvalues, the decomposition is $A=U\Lambda U^{-1}$. The columns of the matrix $U$ are the eigenvectors, i.e. $U=[\vec{u_1}, \vec{u_2}, ...,\vec{u_n}]$ which are not necessarily orthogonal. And, $\Lambda$ is a diagonal matrix of eigenvalues.  In an n-dimensional system there are n eigenvectors (so we have a complete basis) and n eigenvalues, though these are not necessarily distinct.  
+
+If we let $V^T=U^{-1}$, we can re-write the eigenvalue equation as $A=\sum_i \lambda_i \vec{u_i}\vec{v_i}^T$.  You can think about $\vec{u_i}\vec{v_i}^T$ as a 'component' matrix, each of which has the same magnitude.  This representation makes it clear that the eigenvalues indicate the relative contribution of each component.  In a principal components analysis (PCA), the eigenvalues measure the variance associated with each PC. The hope is that most of the variance is accounted for by one or two components - which justifies thinking about restricting our attention to a low-dimensional representation.   
+
+Another way to re-arrange the eigenvalue equation is $AU=U\Lambda$, which is sort of a side-ways stacking of equations for each vector. That is, for a single eigenvector we have 
+
+$$A\vec{u_i} = \lambda_i\vec{u_i} $$
+Before we go any further, let's introduce the idea of _similar matrices_.  Two matrices $A$ and $B$ are similar if there is another matrix $P$ such that $A=P^{-1}BP$ or, equivalently, $PAP^{-1}=B$. Similar matrices have the same eigenvalues (though different eigenvectors). That is, if $A\vec{u_i} = \lambda_i\vec{u_i}$, then $P^{-1}BP\vec{u_i}=\lambda_i\vec{u_i}$. Multiplying through by $P$ we have, $BP\vec{u_i}=\lambda_iP\vec{u_i}$.  So, the eigenvectors of $B$ are $PU$ but the eigenvalues are still $\Lambda$. Note also that $A^2=P^{-1}BPP^{-1}BP=P^{-1}B^2P$. So if two matrices are similar so are all powers.       
+
+In 2-d there are two possibilities.  In the first case, our matrix $A$ has two distinct, real eigenvalues and $A$ is similar to $S$.  To see this, let $P$ be $U^{-1}$ and note that $S=\Lambda$, and we're back to the definition of the eigenvalue decomposition.    
+
+As we saw above, we can represent any vector as a linear combination of the eigenvectors.  So we can write $\vec{x}=c_1\vec{u_1}+c_2\vec{u_2}+...c_n\vec{u_n}$.
+
+Here's where the magic of eigenvectors happens:  Say we want to multiply $A\vec{x}$. Using the eigenvector basis, we get $A\vec{x}=A(c_1\vec{u_1}+c_2\vec{u_2}+...c_n\vec{u_n})=c_1A\vec{u_1}+c_2A\vec{u_2}+...c_nA\vec{u_n}=c_1\lambda_1\vec{u_1}+c_2\lambda_2\vec{u_2}+...c_n\lambda_n\vec{u_n}$. So rather than a messy thing with sheer and rotation, we just have stretching - in the direction of each eigenvector.  Moreover, if we multiply by $A$ again, we just get more stretching! E.g., if we multiply by $A$ k times, we'd have $A^k\vec{x}=c_1\lambda_1^k\vec{u_1}+c_2\lambda_2^k\vec{u_2}+...c_n\lambda_n^k\vec{u_n}$.
+
+This is all well and good, but how do we represent a rotation?  It turns out that when the matrix includes a rotational component, we end up with complex eigenvalues / eigenvectors. Not complicated, 'complex', which means a sum of real and imaginary components.  Recall that the imaginary unit, $i$, is $\sqrt{-1}$.    Since the matrix we started with is made of real numbers, our complex numbers will come in pairs such that the imaginary bits cancel.  That is, if $\lambda_1=\alpha+i\beta$ then $\lambda_2=\alpha-i\beta$.  The eigenvectors must also come in 'conjugate pairs,' i.e. $\vec{u_1}=\vec{u_R}+i\vec{u_I}$ and $\vec{u_2}=\vec{u_R}-i\vec{u_I}$. 
+
+As a grad student I was always glad that the imaginary bits canceled because I'd completely forgotten how to deal with complex numbers.  
+Now, bear with me for a moment and we'll get rid of the imaginary bits. 
+
+Let's plug our complex versions of $\lambda_1$ and $\vec{u_1}$ into our eigenvalue equation, $A\vec{u_1}=\lambda_1\vec{u_1}$, to get $A(\vec{u_R}+i\vec{u_I})=(\alpha+i\beta)(\vec{u_R}+i\vec{u_I})$.  Multiplying everything out, remembering that $i^2=-1$, and gathering up the terms we have $A\vec{u_R}+iA\vec{u_I}=\alpha\vec{u_R}-\beta\vec{u_I}+i(\alpha\vec{u_I}+\beta\vec{u_R})$.  Since the real bits and the imaginary bits don't interact, this is really two equations: $A\vec{u_R}=\alpha\vec{u_R}-\beta\vec{u_I}$ and $A\vec{u_I}=\alpha\vec{u_I}+\beta\vec{u_R}$. We can stack these two equations next to each other to get
+
+$$A \begin{bmatrix}\vec{u_R}  & \vec{u_I} \\
+\end{bmatrix} =\begin{bmatrix}\vec{u_R}  & \vec{u_I} \\
+\end{bmatrix} \begin{bmatrix}\alpha &\beta\\-\beta & \alpha \\
+\end{bmatrix} $$
+
+Now, with a little more effort we can convert that last matrix on the right into a rotation and stretch.  (Actually, you did this already in our last 'hands on' though you might not have realized).
+Let $|\lambda| = [(\alpha+i\beta)(\alpha-i\beta)]^{1/2}=\sqrt{\alpha^2+\beta^2}$.  On top of this, let $cos(\omega)=\frac{\alpha}{|\lambda|}$ and $sin(\omega)=\frac{\beta}{|\lambda|}$.  This implies that $tan(\omega)=\frac{\beta}{\alpha}$ and in practice we solve for $\omega$ using $\omega=tan^{-1}(\frac{\beta} {\alpha})$).  We are now in a spot to see that
+
+$$\begin{bmatrix}\alpha &\beta\\-\beta & \alpha \\
+\end{bmatrix} = |\lambda| \begin{bmatrix}cos(\omega) &sin(\omega)\\-sin(\omega) & cos(\omega) \\
+\end{bmatrix} = |\lambda|R(\omega)$$
+
+
+So, if we let $P =[\vec{u_R}, \vec{u_I}]$ we have $P^{-1}AP=|\lambda|R(\omega)$. As we saw earlier, powers of similar matrices are similar, so that $P^{-1}A^kP=|\lambda|^kR(k\omega)$. 
+
+In higher dimensions, the eigendecomposition reduces a matrix to a block diagonal form, with real eigenvalues on the diagonal combined with some number of blocks similar to $R$, albeit with different frequencies. Here's a 5-d example
+
+$$\begin{bmatrix}\lambda_1\\
+& \alpha_1 &\beta_1\\
+&-\beta_1 & \alpha_1 \\
+&&& \alpha_2 &\beta_2\\
+&&&-\beta_2 & \alpha_2 \\
+\end{bmatrix} $$
+
+
+The implications of this are HUGE.  Raising this block diagonal matrix to a power just raises the blocks to powers separately.  They don't interact.  As a consequence all linear systems can do - regardless of how large they are - is grow/shrink exponentially or oscillate with fixed set of frequencies. So, if we are looking at the dynamics of a system that's been around for a while __and hasn't blown up or shrunk to zero__, what's left?  Right, the only things that stick around in the long run are the purely imaginary eigenvalues, i.e. ones where $|\lambda|=1$. Everything else will have died out. Flipping this around, any time series that can be decomposed into a set of $k$ distinct frequencies corresponds to a linear dynamical system of dimension $2k$.  
+
+Here are a few other handy facts about eigenvalues:
+1. The eigenvalues of a _symmetric matrix_ (i.e. a matrix for which $A=A^T$) are always real
+2. The eigenvalues of an _antisymmetric matrix (i.e. a matrix for which $A=-A^T$) are always imaginary
+3. The eigenvalues of $AA^T$ and $A^TA$ are always positive  
+4. The eigenvalues of $A^{-1}$ are the reciprocals of the eigenvalues of $A$. In a singular matrix, one of the eigenvalues is 0 so the inverse would have to have an eigenvalue of infinity!
+
+In R, e=eigen(A), gets you the eigenvalues/ eigenvectors of matrix A which are contained in e$values and e$vectors. 
+
+<!-- ## Linear dynamical systems -->
+
+
+<!-- Homework -->
+<!-- 1. Make (2 x 100) array of points on a circle (Hints: 1. the equation for a circle centered on $(a,b)$ with radius $r$ is $(x-a)^2+(y-b)^2=r^2$, 2. if you set up x so that it goes from low to high and back again, then using 'line' will generate a circle).  Apply stretch, rotation, and shear matrices to your circle and describe the result.   -->
+<!-- b. Change the center of the circle to 0,0 and repeat.  -->
+<!-- c. Change the shear, stretch, and rotation parameters and repeat. -->
+
+<!-- 2. Consider a population composed of juveniles, j_t, and adults, a_t,that has been locally extirpated. Your job is to recover this population by transplanting some individuals. The dynamics are roughly given by  $j_{t+1}=.1 j_t+ a_t$ and $a_{t+1}=.3 j_t+.7 a_t$  -->
+<!--     a. Let $\vec{x_t}=[J_t A_t]^T$ be a vector representing the density of individuals in each class. Re-write the given pair of equations as $\vec{x}_{t+1}=A\vec{x}_{t}$.   -->
+<!--     b. You can either transplant a) 10 juveniles, b) 10 adults, or c) 7 of each. Simulate the dynamics over 10 steps and plot the total abundance (j_t+a_t) through time to decide which is the best option for a speedy recovery. -->
+<!--     c. compute the eigenvalues and eigenvectors of $A$. Plot the eigenvectors along with initial conditions a-c. Hint: this will look alot better if you re-scale the initial condition vectors to length 1.  -->
+<!--     d. Use the plot and the eigenvalues to explain the results from b. -->
