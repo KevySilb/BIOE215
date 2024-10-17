@@ -57,9 +57,9 @@ function makefig()
     return fig, ax, A
 end
 fig, ax, A = makefig()
-save("parta.png", fig)
+save("hw2_files/figure-html/parta.png", fig)
 ```
-![circle of 100 points centered at the origin](parta.png){fig-align="center"
+![circle of 100 points centered at the origin](hw2_files/figure-html/parta.png){fig-align="center"
 width="70%"}
 
 ## Part B
@@ -91,12 +91,12 @@ For shear we shall choose a small value for the off diagonal elements and increm
 
 ```{julia}
 shear = getShear(0.01)
-record(fig, "shear.mp4", 1:200, framerate = 60) do i
+record(fig, "hw2_files/figure-html/shear.mp4", 1:200, framerate = 60) do i
     A[] = A[] * shear
 end;
 ```
 <video width="600" autoplay loop muted>
-  <source src="shear.mp4" type="video/mp4">
+  <source src="hw2_files/figure-html/shear.mp4" type="video/mp4">
 </video>
 
 
@@ -112,12 +112,12 @@ and incrementally rotate the points 200 times at 60 frames per second
 ```{julia}
 fig, ax, A = makefig()
 rotation = getRotation(0.05)
-record(fig, "rotation.mp4", 1:200, framerate = 60) do i
+record(fig, "hw2_files/figure-html/rotation.mp4", 1:200, framerate = 60) do i
     A[] = A[] * rotation
 end;
 ```
 <video width="600" autoplay loop muted>
-  <source src="rotation.mp4" type="video/mp4">
+  <source src="hw2_files/figure-html/rotation.mp4" type="video/mp4">
 </video>
 
 ### Stretch
@@ -132,12 +132,12 @@ For Stretching the circle we choose a value in the diagonal elements that are cl
 ```{julia}
 fig, ax, A = makefig()
 stretch = getStretch(1.005)
-record(fig, "stretch.mp4", 1:200, framerate = 60) do i
+record(fig, "hw2_files/figure-html/stretch.mp4", 1:200, framerate = 60) do i
     A[] = A[] * stretch
 end;
 ```
 <video width="600" autoplay loop muted>
-  <source src="stretch.mp4" type="video/mp4">
+  <source src="hw2_files/figure-html/stretch.mp4" type="video/mp4">
 </video>
 
 ## Part D
@@ -174,7 +174,7 @@ function partD()
         points3[1] = [Point2f(mat[i, 1], mat[i, 2]) for i in 1:N]
     end
 
-    record(fig, "partd.mp4", 1:200, framerate = 60) do i
+    record(fig, "hw2_files/figure-html/partd.mp4", 1:200, framerate = 60) do i
         A[] = A[] * shear
         B[] = B[] * rotation
         C[] = C[] * stretch
@@ -184,7 +184,7 @@ partD();
 ```
 
 <video width="650" autoplay loop muted>
-  <source src="partd.mp4" type="video/mp4">
+  <source src="hw2_files/figure-html/partd.mp4" type="video/mp4">
 </video>
 
 
@@ -242,11 +242,11 @@ function makefig()
 
     Legend(fig[1, 2], ax1, "Legend")
 
-    save("p1partb.png", fig)
+    save("hw2_files/figure-html/p1partb.png", fig)
 end
 makefig();
 ```
-![System dynamics with 3 different initial conditions over 10 steps](p1partb.png){fig-align="center"
+![System dynamics with 3 different initial conditions over 10 steps](hw2_files/figure-html/p1partb.png){fig-align="center"
 width="100%"}
 
 It is clear that introducing 10 adults leads to the biggest population growth after 10 time steps. 
@@ -275,12 +275,12 @@ function partc()
     arrows!(ax, [0.0], [0.0], [η.vectors[1, 1]], [η.vectors[2, 1]], color = :purple, label = "η₁")
     arrows!(ax, [0.0], [0.0], [η.vectors[1, 2]], [η.vectors[2, 2]], color = :orange, label = "η₂")
     Legend(fig[1, 2], ax, "Legend")    
-    save("q2partc.png", fig)
+    save("hw2_files/figure-html/q2partc.png", fig)
     return η, [10.0 0.0], [0.0 10.0], [7.0 7.0]
 end
 η, p1, p2, p3 = partc();
 ```
-![The eigenvectors of the matrix A along with normalized initial conditions](q2partc.png){fig-align="center"
+![The eigenvectors of the matrix A along with normalized initial conditions](hw2_files/figure-html/q2partc.png){fig-align="center"
 width="100%"}
 
 ## Part D
@@ -317,10 +317,10 @@ function partd(η, p1, p2, p3)
               xticks = (1:6, vec([ic * "-" * eig for eig in eiglabels, ic in iclabels])))
 
     barplot!(ax, vec(projections))
-    save("partd.png", fig)
+    save("hw2_files/figure-html/partd.png", fig)
 end
 partd(η, p1, p2, p3);
 ```
-![Bar plot of the projections of the initial conditions onto the eigen vectors of A.](partd.png){fig-align="center"
+![Bar plot of the projections of the initial conditions onto the eigen vectors of A.](hw2_files/figure-html/partd.png){fig-align="center"
 width="100%"}
 

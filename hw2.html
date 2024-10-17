@@ -177,7 +177,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="part-a">Part A</h2>
 <section id="make-a-2-100-array-of-points-on-a-circle." class="level4">
 <h4 class="anchored" data-anchor-id="make-a-2-100-array-of-points-on-a-circle.">Make a <span class="math inline">\([2, 100]\)</span> array of points on a circle.</h4>
-<div id="bcd86fa2" class="cell" data-execution_count="1">
+<div id="12e423aa" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLMakie</span></span>
@@ -203,12 +203,12 @@ window.Quarto = {
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fig, ax, A</span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>fig, ax, A <span class="op">=</span> <span class="fu">makefig</span>()</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(<span class="st">"parta.png"</span>, fig)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(<span class="st">"hw2_files/figure-html/parta.png"</span>, fig)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="parta.png" class="img-fluid figure-img" style="width:70.0%"></p>
+<p><img src="hw2_files/figure-html/parta.png" class="img-fluid figure-img" style="width:70.0%"></p>
 <figcaption>circle of 100 points centered at the origin</figcaption>
 </figure>
 </div>
@@ -219,7 +219,7 @@ window.Quarto = {
 <section id="apply-a-stretch-rotation-and-shear-matrices-to-your-circle-and-describe-the-result" class="level4">
 <h4 class="anchored" data-anchor-id="apply-a-stretch-rotation-and-shear-matrices-to-your-circle-and-describe-the-result">Apply a stretch, rotation, and shear matrices to your circle and describe the result</h4>
 <p>Let us define the shear, rotation, and stretch matrices:</p>
-<div id="a997bd8d" class="cell" data-execution_count="2">
+<div id="c6fa0afe" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">getShear</span>(k<span class="op">::</span><span class="dt">Float64</span>)</span>
@@ -242,17 +242,17 @@ window.Quarto = {
 <p><span class="math display">\[\begin{align}
     S_{\text{shear}} = \left[\begin{matrix}0 &amp; 0.1 \\ 0.1 &amp; 0\end{matrix}\right]
 \end{align}\]</span></p>
-<div id="96b7cb8f" class="cell" data-execution_count="3">
+<div id="c495ae0d" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>shear <span class="op">=</span> <span class="fu">getShear</span>(<span class="fl">0.01</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">record</span>(fig, <span class="st">"shear.mp4"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">200</span>, framerate <span class="op">=</span> <span class="fl">60</span>) <span class="cf">do</span> i</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">record</span>(fig, <span class="st">"hw2_files/figure-html/shear.mp4"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">200</span>, framerate <span class="op">=</span> <span class="fl">60</span>) <span class="cf">do</span> i</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    A[] <span class="op">=</span> A[] <span class="op">*</span> shear</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <video width="600" autoplay="" loop="" muted="">
-<source src="shear.mp4" type="video/mp4">
+<source src="hw2_files/figure-html/shear.mp4" type="video/mp4">
 </video>
 </section>
 <section id="rotation" class="level3">
@@ -262,18 +262,18 @@ window.Quarto = {
     R_{\text{rotation}} = \left[\begin{matrix}\cos{(\theta)} &amp; -\sin{(\theta)} \\ \sin{(\theta)} &amp; \cos{(\theta)}\end{matrix}\right]
 \end{align}\]</span></p>
 <p>and incrementally rotate the points 200 times at 60 frames per second</p>
-<div id="078b9a9a" class="cell" data-execution_count="4">
+<div id="352f24b7" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fig, ax, A <span class="op">=</span> <span class="fu">makefig</span>()</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>rotation <span class="op">=</span> <span class="fu">getRotation</span>(<span class="fl">0.05</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">record</span>(fig, <span class="st">"rotation.mp4"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">200</span>, framerate <span class="op">=</span> <span class="fl">60</span>) <span class="cf">do</span> i</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">record</span>(fig, <span class="st">"hw2_files/figure-html/rotation.mp4"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">200</span>, framerate <span class="op">=</span> <span class="fl">60</span>) <span class="cf">do</span> i</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    A[] <span class="op">=</span> A[] <span class="op">*</span> rotation</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <video width="600" autoplay="" loop="" muted="">
-<source src="rotation.mp4" type="video/mp4">
+<source src="hw2_files/figure-html/rotation.mp4" type="video/mp4">
 </video>
 </section>
 <section id="stretch" class="level3">
@@ -282,25 +282,25 @@ window.Quarto = {
 <p><span class="math display">\[\begin{align}
     S_{\text{stretch}} = \left[\begin{matrix}1.05 &amp; 0 \\ 0 &amp; 1.05\end{matrix}\right]
 \end{align}\]</span></p>
-<div id="c27ea12a" class="cell" data-execution_count="5">
+<div id="18f9e591" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fig, ax, A <span class="op">=</span> <span class="fu">makefig</span>()</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>stretch <span class="op">=</span> <span class="fu">getStretch</span>(<span class="fl">1.005</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">record</span>(fig, <span class="st">"stretch.mp4"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">200</span>, framerate <span class="op">=</span> <span class="fl">60</span>) <span class="cf">do</span> i</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">record</span>(fig, <span class="st">"hw2_files/figure-html/stretch.mp4"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">200</span>, framerate <span class="op">=</span> <span class="fl">60</span>) <span class="cf">do</span> i</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    A[] <span class="op">=</span> A[] <span class="op">*</span> stretch</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <video width="600" autoplay="" loop="" muted="">
-<source src="stretch.mp4" type="video/mp4">
+<source src="hw2_files/figure-html/stretch.mp4" type="video/mp4">
 </video>
 </section>
 </section>
 <section id="part-d" class="level2">
 <h2 class="anchored" data-anchor-id="part-d">Part D</h2>
 <p>Do the same for a point cloud of 100 points taken from the normal distribution with 0 mean and standard deviation 1.</p>
-<div id="4f2d1da1" class="cell" data-execution_count="6">
+<div id="e55d3338" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">partD</span>()</span>
@@ -332,7 +332,7 @@ window.Quarto = {
 <span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        points3[<span class="fl">1</span>] <span class="op">=</span> [<span class="fu">Point2f</span>(mat[i, <span class="fl">1</span>], mat[i, <span class="fl">2</span>]) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>N]</span>
 <span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
 <span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">record</span>(fig, <span class="st">"partd.mp4"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">200</span>, framerate <span class="op">=</span> <span class="fl">60</span>) <span class="cf">do</span> i</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">record</span>(fig, <span class="st">"hw2_files/figure-html/partd.mp4"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">200</span>, framerate <span class="op">=</span> <span class="fl">60</span>) <span class="cf">do</span> i</span>
 <span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>        A[] <span class="op">=</span> A[] <span class="op">*</span> shear</span>
 <span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>        B[] <span class="op">=</span> B[] <span class="op">*</span> rotation</span>
 <span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>        C[] <span class="op">=</span> C[] <span class="op">*</span> stretch</span>
@@ -342,7 +342,7 @@ window.Quarto = {
 </details>
 </div>
 <video width="650" autoplay="" loop="" muted="">
-<source src="partd.mp4" type="video/mp4">
+<source src="hw2_files/figure-html/partd.mp4" type="video/mp4">
 </video>
 </section>
 </section>
@@ -367,7 +367,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="part-b-1">Part B</h2>
 <section id="you-can-either-transplant-10-juveniles-10-adults-or-7-each.-simulate-the-dynamics-over-10-steps-and-plot-the-total-abundance-to-decide-which-is-best-for-a-speedy-recovery." class="level4">
 <h4 class="anchored" data-anchor-id="you-can-either-transplant-10-juveniles-10-adults-or-7-each.-simulate-the-dynamics-over-10-steps-and-plot-the-total-abundance-to-decide-which-is-best-for-a-speedy-recovery.">You can either transplant 10 juveniles, 10 adults, or 7 each. Simulate the dynamics over 10 steps and plot the total abundance to decide which is best for a speedy recovery.</h4>
-<div id="51f3b2b8" class="cell" data-execution_count="7">
+<div id="3963a598" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">system</span>(p<span class="op">::</span><span class="dt">Vector{Float64}</span>, N<span class="op">::</span><span class="dt">Integer</span>)</span>
@@ -399,14 +399,14 @@ window.Quarto = {
 <span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">Legend</span>(fig[<span class="fl">1</span>, <span class="fl">2</span>], ax1, <span class="st">"Legend"</span>)</span>
 <span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">save</span>(<span class="st">"p1partb.png"</span>, fig)</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">save</span>(<span class="st">"hw2_files/figure-html/p1partb.png"</span>, fig)</span>
 <span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
 <span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="fu">makefig</span>();</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="p1partb.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p><img src="hw2_files/figure-html/p1partb.png" class="img-fluid figure-img" style="width:100.0%"></p>
 <figcaption>System dynamics with 3 different initial conditions over 10 steps</figcaption>
 </figure>
 </div>
@@ -417,7 +417,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="part-c">Part C</h2>
 <section id="compute-the-eigenvalues-and-eigen-vectors-of-a.-plot-along-with-normalized-initial-conditions." class="level4">
 <h4 class="anchored" data-anchor-id="compute-the-eigenvalues-and-eigen-vectors-of-a.-plot-along-with-normalized-initial-conditions.">Compute the eigenvalues and eigen vectors of A. Plot along with normalized initial conditions.</h4>
-<div id="f76e445b" class="cell" data-execution_count="8">
+<div id="1ddef5f1" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
@@ -439,7 +439,7 @@ window.Quarto = {
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrows!</span>(ax, [<span class="fl">0.0</span>], [<span class="fl">0.0</span>], [η.vectors[<span class="fl">1</span>, <span class="fl">1</span>]], [η.vectors[<span class="fl">2</span>, <span class="fl">1</span>]], color <span class="op">=</span> <span class="op">:</span>purple, label <span class="op">=</span> <span class="st">"η₁"</span>)</span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrows!</span>(ax, [<span class="fl">0.0</span>], [<span class="fl">0.0</span>], [η.vectors[<span class="fl">1</span>, <span class="fl">2</span>]], [η.vectors[<span class="fl">2</span>, <span class="fl">2</span>]], color <span class="op">=</span> <span class="op">:</span>orange, label <span class="op">=</span> <span class="st">"η₂"</span>)</span>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">Legend</span>(fig[<span class="fl">1</span>, <span class="fl">2</span>], ax, <span class="st">"Legend"</span>)    </span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">save</span>(<span class="st">"q2partc.png"</span>, fig)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">save</span>(<span class="st">"hw2_files/figure-html/q2partc.png"</span>, fig)</span>
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> η, [<span class="fl">10.0</span> <span class="fl">0.0</span>], [<span class="fl">0.0</span> <span class="fl">10.0</span>], [<span class="fl">7.0</span> <span class="fl">7.0</span>]</span>
 <span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
 <span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>η, p1, p2, p3 <span class="op">=</span> <span class="fu">partc</span>();</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -447,7 +447,7 @@ window.Quarto = {
 </div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="q2partc.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p><img src="hw2_files/figure-html/q2partc.png" class="img-fluid figure-img" style="width:100.0%"></p>
 <figcaption>The eigenvectors of the matrix A along with normalized initial conditions</figcaption>
 </figure>
 </div>
@@ -465,7 +465,7 @@ window.Quarto = {
 \end{align*}\]</span></p>
 <p>Additionally, let <span class="math inline">\(\eta_1\)</span> represent the first eigenvector, and <span class="math inline">\(\eta_2\)</span> represent the second eigenvector of the matrix <span class="math inline">\(A\)</span>.</p>
 <p>Let us find the projections of the initial conditions onto the eigenvectors and plot the results.</p>
-<div id="f0e77fee" class="cell" data-execution_count="9">
+<div id="01c723db" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">project</span>(v<span class="op">::</span><span class="dt">Vector{Float64}</span>, u<span class="op">::</span><span class="dt">Vector{Float64}</span>)</span>
@@ -485,14 +485,14 @@ window.Quarto = {
 <span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>              xticks <span class="op">=</span> (<span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fu">vec</span>([ic <span class="op">*</span> <span class="st">"-"</span> <span class="op">*</span> eig for eig <span class="kw">in</span> eiglabels, ic <span class="kw">in</span> iclabels])))</span>
 <span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">barplot!</span>(ax, <span class="fu">vec</span>(projections))</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">save</span>(<span class="st">"partd.png"</span>, fig)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">save</span>(<span class="st">"hw2_files/figure-html/partd.png"</span>, fig)</span>
 <span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
 <span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="fu">partd</span>(η, p1, p2, p3);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="partd.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p><img src="hw2_files/figure-html/partd.png" class="img-fluid figure-img" style="width:100.0%"></p>
 <figcaption>Bar plot of the projections of the initial conditions onto the eigen vectors of A.</figcaption>
 </figure>
 </div>

@@ -1,0 +1,49 @@
+---
+title: "Homework 1 BIOE215"
+date: 2024-10-16
+author:
+  - name: Kevin Silberberg
+    id: ks
+    orcid: 0009-0009-4825-1865
+    email: ksilberb@ucsc.edu
+    affiliation:
+      - name: University of California Santa Cruz
+        city: Santa Cruz
+        state: CA
+        href: www.ucsc.edu
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-fold: true
+    code-links:
+    - icon: github
+      href: https://github.com/KevySilb/BIOE215
+jupyter: julia-1.10
+execute:
+  cache: true
+  eval: true
+  freeze: auto
+  warning: false
+---
+
+# Problem 1
+
+## Part A
+
+Construct a multi-step map for the Ricker model, 
+
+\begin{equation}\tag{1}\label{eq:Ricker}
+	x_{t+1} = x_te^{r(1-x_t)}
+\end{equation}
+
+qualitatively describe the dynamics for each value $r = 2, 2.5, 3$. 
+
+```{julia}
+using GLMakie
+function q1parta()
+    rs = [2.0, 2.5, 3.0]
+    
+end
+q1parta();
+```
