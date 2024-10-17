@@ -1,0 +1,326 @@
+---
+title: "Homework 2 BIOE215"
+date: 2024-10-11
+author:
+  - name: Kevin Silberberg
+    id: ks
+    orcid: 0009-0009-4825-1865
+    email: ksilberb@ucsc.edu
+    affiliation:
+      - name: University of California Santa Cruz
+        city: Santa Cruz
+        state: CA
+        href: www.ucsc.edu
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-fold: true
+    code-links:
+    - icon: github
+      href: https://github.com/KevySilb/BIOE215
+jupyter: julia-1.10
+execute:
+  cache: true
+  eval: true
+  freeze: auto
+  warning: false
+---
+
+# Problem 1
+
+## Part A
+
+#### Make a $[2, 100]$ array of points on a circle.
+
+```{julia}
+using GLMakie
+
+function makecirc(N::Integer)
+    A = rand(N, 2) .- 0.5
+    return A ./ sqrt.(sum(A .^ 2, dims = 2))
+end
+
+function makefig()
+    fig = Figure();
+    ax = Axis(fig[1,1], aspect = DataAspect())
+    N = 100
+    A = Observable(makecirc(N))
+    
+    points = scatter!([Point2f(A[][i, 1], A[][i, 2]) for i in 1:N])
+    on(A) do mat
+        points[1] = [Point2f(mat[i, 1], mat[i, 2]) for i in 1:N]
+    end
+    
+    xlims!(ax, -2, 2)
+    ylims!(ax, -2, 2)
+    return fig, ax, A
+end
+fig, ax, A = makefig()
+save("parta.png", fig)
+```
+![circle of 100 points centered at the origin](parta.png){fig-align="center"
+width="70%"}
+
+## Part B
+
+#### Apply a stretch, rotation, and shear matrices to your circle and describe the result
+
+Let us define the shear, rotation, and stretch matrices:
+
+```{julia}
+function getShear(k::Float64)
+    return [[1 k]; [k 1]]
+end
+
+function getRotation(θ::Float64)
+    return [[cos(θ); -sin(θ)] [sin(θ); cos(θ)]]
+end
+
+function getStretch(s::Float64)
+    return [[s 0]; [0 s]]
+end;
+```
+
+### Shear
+For shear we shall choose a small value for the off diagonal elements and incrementally shear the points in the circle 200 times at 60 frames per second. 
+
+\begin{align}
+	S_{\text{shear}} = \left[\begin{matrix}0 & 0.1 \\ 0.1 & 0\end{matrix}\right]
+\end{align}
+
+```{julia}
+shear = getShear(0.01)
+record(fig, "shear.mp4", 1:200, framerate = 60) do i
+    A[] = A[] * shear
+end;
+```
+<video width="600" autoplay loop muted>
+  <source src="shear.mp4" type="video/mp4">
+</video>
+
+
+### Rotation
+
+For rotation we set $\theta = 0.05$ radians and define the rotation matrix as:
+
+\begin{align}
+	R_{\text{rotation}} = \left[\begin{matrix}\cos{(\theta)} & -\sin{(\theta)} \\ \sin{(\theta)} & \cos{(\theta)}\end{matrix}\right]
+\end{align}
+
+and incrementally rotate the points 200 times at 60 frames per second
+```{julia}
+fig, ax, A = makefig()
+rotation = getRotation(0.05)
+record(fig, "rotation.mp4", 1:200, framerate = 60) do i
+    A[] = A[] * rotation
+end;
+```
+<video width="600" autoplay loop muted>
+  <source src="rotation.mp4" type="video/mp4">
+</video>
+
+### Stretch
+
+For Stretching the circle we choose a value in the diagonal elements that are close to but greater than one (less than one would be shrinking) and incrementally stretch each point in the circle 200 times... where
+
+\begin{align}
+	S_{\text{stretch}} = \left[\begin{matrix}1.05 & 0 \\ 0 & 1.05\end{matrix}\right]
+\end{align}
+
+
+```{julia}
+fig, ax, A = makefig()
+stretch = getStretch(1.005)
+record(fig, "stretch.mp4", 1:200, framerate = 60) do i
+    A[] = A[] * stretch
+end;
+```
+<video width="600" autoplay loop muted>
+  <source src="stretch.mp4" type="video/mp4">
+</video>
+
+## Part D
+
+Do the same for a point cloud of 100 points taken from the normal distribution with 0 mean and standard deviation 1.
+
+```{julia}
+function partD()
+    fig = Figure();
+    ax1 = Axis(fig[1,1], title = "shear", aspect = DataAspect())
+    ax2 = Axis(fig[1,2], title = "rotate", aspect = DataAspect())
+    ax3 = Axis(fig[1,3], title = "stretch", aspect = DataAspect())
+    xlims!(ax1, -2, 2)
+    ylims!(ax1, -2, 2)
+    xlims!(ax2, -2, 2)
+    ylims!(ax2, -2, 2)
+    xlims!(ax3, -2, 2)
+    ylims!(ax3, -2, 2)
+    
+    N = 100
+    A = Observable(randn(N, 2))
+    B = Observable(randn(N, 2))
+    C = Observable(randn(N, 2))
+    points1 = scatter!(ax1, [Point2f(A[][i, 1], A[][i, 2]) for i in 1:N])
+    points2 = scatter!(ax2, [Point2f(B[][i, 1], B[][i, 2]) for i in 1:N])
+    points3 = scatter!(ax3, [Point2f(C[][i, 1], C[][i, 2]) for i in 1:N])    
+    on(A) do mat
+        points1[1] = [Point2f(mat[i, 1], mat[i, 2]) for i in 1:N]
+    end
+    on(B) do mat
+        points2[1] = [Point2f(mat[i, 1], mat[i, 2]) for i in 1:N]
+    end
+    on(C) do mat
+        points3[1] = [Point2f(mat[i, 1], mat[i, 2]) for i in 1:N]
+    end
+
+    record(fig, "partd.mp4", 1:200, framerate = 60) do i
+        A[] = A[] * shear
+        B[] = B[] * rotation
+        C[] = C[] * stretch
+    end;
+end
+partD();
+```
+
+<video width="650" autoplay loop muted>
+  <source src="partd.mp4" type="video/mp4">
+</video>
+
+
+# Problem 2
+
+Consider a population that has been locally extirpated. Your job is to recover this population by transplanting some individuals. The expected dynamics are given by 
+
+\begin{align}
+	j_{t+1} &= 0.1j_t + a_t \\
+	a_{t+1} &= 0.3j_t + 0.7a_t
+\end{align}
+
+where $j_t$ and $a_t$ indicate the abundance of juveniles and adults, respectively. 
+
+## Part A
+
+#### Let $\vec{x}_t = \left[J_tA_t\right]^T$ be a vector representing the abundance of individuals in each class. Re-write the given pair of equations as $\vec{x}_{t+1} = A\vec{x}_t$
+
+\begin{equation}\label{eq:prob2}
+	\left[\begin{matrix}j_{t+1} \\ a_{t+1}\end{matrix}\right] = \left[\begin{matrix}0.1 & 1 \\ 0.3 & 0.7\end{matrix}\right] \left[\begin{matrix}j_t \\ a_t\end{matrix}\right]
+\end{equation}
+
+
+## Part B
+
+#### You can either transplant 10 juveniles, 10 adults, or 7 each. Simulate the dynamics over 10 steps and plot the total abundance to decide which is best for a speedy recovery.
+
+```{julia}
+function system(p::Vector{Float64}, N::Integer)
+    u = Matrix{Float64}(undef, N, 2)
+    u[1, :] = [p[1], p[2]]
+    for t = 2:N
+        u[t, :] = [0.1*u[t-1, 1] + u[t-1, 2], 0.3*u[t-1, 1] + 0.7*u[t-1, 2]]
+    end
+    u
+end
+
+function makefig()
+    fig = Figure();
+    ax1 = Axis(fig[1,1], title = "10 juveniles", ylabel = "population", xlabel = "steps")
+    xlims!(ax1, 0, 11)
+    ylims!(ax1, 0, 20)
+    
+    p1 = [10.0, 0.0]
+    p2 = [0.0, 10.0]
+    p3 = [7.0, 7.0]
+
+    sol1 = system(p1, 10)
+    sol2 = system(p2, 10)
+    sol3 = system(p3, 10)
+
+    lines!(ax1, sol1[:, 1]+sol1[:, 2], label = "10 juveniles", color = :blue)
+    lines!(ax1, sol2[:, 1]+sol2[:, 2], label = "10 adults", color = :red)
+    lines!(ax1, sol3[:, 1]+sol3[:, 2], label = "7 of each", color = :green)
+
+    Legend(fig[1, 2], ax1, "Legend")
+
+    save("p1partb.png", fig)
+end
+makefig();
+```
+![System dynamics with 3 different initial conditions over 10 steps](p1partb.png){fig-align="center"
+width="100%"}
+
+It is clear that introducing 10 adults leads to the biggest population growth after 10 time steps. 
+
+## Part C
+
+#### Compute the eigenvalues and eigen vectors of A. Plot along with normalized initial conditions.
+
+```{julia}
+using LinearAlgebra
+
+function partc()
+    p1 = normalize([10.0 0.0])
+    p2 = normalize([0.0 10.0])
+    p3 = normalize([7.0 7.0])
+
+    
+    A = [[0.1 1.0];[0.3 0.7]]
+    η = eigen(A)
+
+    fig = Figure()
+    ax = Axis(fig[1, 1], title = "λ₁ = $(round(η.values[1], digits = 3)), λ₂ = $(round(η.values[2], digits = 3))")
+    arrows!(ax, [0.0], [0.0], p1[:, 1], p1[:, 2], color = :blue, label = "10 juveniles")
+    arrows!(ax, [0.0], [0.0], p2[:, 1], p2[:, 2], color = :red, label = "10 adults")
+    arrows!(ax, [0.0], [0.0], p3[:, 1], p3[:, 2], color = :green, label = "7 of each")
+    arrows!(ax, [0.0], [0.0], [η.vectors[1, 1]], [η.vectors[2, 1]], color = :purple, label = "η₁")
+    arrows!(ax, [0.0], [0.0], [η.vectors[1, 2]], [η.vectors[2, 2]], color = :orange, label = "η₂")
+    Legend(fig[1, 2], ax, "Legend")    
+    save("q2partc.png", fig)
+    return η, [10.0 0.0], [0.0 10.0], [7.0 7.0]
+end
+η, p1, p2, p3 = partc();
+```
+![The eigenvectors of the matrix A along with normalized initial conditions](q2partc.png){fig-align="center"
+width="100%"}
+
+## Part D
+
+Let
+
+\begin{align*}
+    J &= \left[\begin{matrix}10 \\ 0\end{matrix}\right] 
+    \quad & 
+    A &= \left[\begin{matrix}0 \\ 10\end{matrix}\right] 
+    \quad & 
+    B &= \left[\begin{matrix}7 \\ 7\end{matrix}\right]
+\end{align*}
+
+Additionally, let $\eta_1$ represent the first eigenvector, and $\eta_2$ represent the second eigenvector of the matrix $A$.
+
+Let us find the projections of the initial conditions onto the eigenvectors and plot the results. 
+
+```{julia}
+function project(v::Vector{Float64}, u::Vector{Float64})
+    dot(normalize(u), v) * normalize(u)
+end
+
+function partd(η, p1, p2, p3)
+    ics = [vec(p1), vec(p2), vec(p3)]
+    iclabels = ["J", "A", "B"]
+    eiglabels = ["η₁", "η₂"]
+
+    projections = [norm(project(p, η.vectors[:, i])) for i in 1:2, p in ics]
+
+    fig = Figure()
+    ax = Axis(fig[1, 1],
+              title = "projections of J, A, B onto η₁, η₂",
+              xticks = (1:6, vec([ic * "-" * eig for eig in eiglabels, ic in iclabels])))
+
+    barplot!(ax, vec(projections))
+    save("partd.png", fig)
+end
+partd(η, p1, p2, p3);
+```
+![Bar plot of the projections of the initial conditions onto the eigen vectors of A.](partd.png){fig-align="center"
+width="100%"}
+
